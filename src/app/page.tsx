@@ -1,13 +1,20 @@
 "use client";
 
-import Container from "@/components/Container";
-import Navbar from "@/components/Navbar";
-import { convertKelvinToFahrenheit } from "@/utils/convertKelvinToFarenheit";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { format, fromUnixTime, parseISO } from "date-fns";
+// React and Next.js Imports
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
+// Third-Party Libraries
+import { format, parseISO } from 'date-fns';
+// Utility Functions
+import { convertKelvinToFahrenheit } from '@/utils/convertKelvinToFarenheit';
+import { getDayOrNightIcon } from '@/utils/getDayOrNightIcon';
+// Components
+import Container from '@/components/Container';
+import Navbar from '@/components/Navbar';
+import WeatherIcon from '@/components/WeatherIcon';
+// Styles - Note: Usually global styles are imported in _app.tsx, not in individual pages.
+import './globals.css';
 
-// https://api.openweathermap.org/data/2.5/forecast?q=keyport&appid=0bf1bddb1098291128c414cdb6eec85c
 interface WeatherDetail {
   dt: number;
   main: {
@@ -130,7 +137,23 @@ export default function Home() {
               </div>
               <div className="flex gap-10 sm:gap-16 overflow-x-auto w-full justify-between pr-3">
                 {data.list.map((data: WeatherDetail, index: number) => (
-                  <div key={index} className="flex flex-col justify-between gap-2 items-center text-xs font-semibold"></div>
+                  <div
+                    key={index}
+                    className="flex flex-col justify-between gap-2 items-center text-xs font-semibold"
+                  >
+                    <p className="whitespace-nowrap">
+                      {format(parseISO(data.dt_txt), "h:mm a")}
+                    </p>
+                    <p>
+                      <WeatherIcon
+                        iconName={getDayOrNightIcon(
+                          data.weather[0].icon,
+                          data.dt_txt
+                        )}
+                      />
+                      {convertKelvinToFahrenheit(data.main.temp ?? 0)}°
+                    </p>
+                  </div>
                 ))}
               </div>
             </Container>
