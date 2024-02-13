@@ -4,18 +4,23 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 // Third-Party Libraries
-import { format, parseISO } from "date-fns";
+import { format, parseISO, fromUnixTime } from "date-fns";
 // Utility Functions
-import { convertKelvinToFahrenheit } from "@/utils/convertKelvinToFarenheit";
+import { convertKelvinToFarenheit } from "@/utils/convertKelvinToFarenheit";
 import { getDayOrNightIcon } from "@/utils/getDayOrNightIcon";
+import { metersToMiles } from "@/utils/convertMetersToMiles";
+import { convertWindSpeedToMph } from "@/utils/convertWindSpeed";
 // Components
 import Container from "@/components/Container";
 import Navbar from "@/components/Navbar";
 import WeatherIcon from "@/components/WeatherIcon";
+import WeatherDetails from "@/components/WeatherDetails";
+import ForecastWeatherDetail from "@/components/ForecastWeatherDetail";
 // Styles - Note: Usually global styles are imported in _app.tsx, not in individual pages.
 import "./globals.css";
 
 interface WeatherDetail {
+  city: any;
   dt: number;
   main: {
     temp: number;
@@ -70,7 +75,7 @@ interface WeatherData {
 }
 
 export default function Home() {
-  const { isPending, error, data } = useQuery({
+  const { isPending, error, data } = useQuery<WeatherData>({
     queryKey: ["repoData"],
     queryFn: async () => {
       const { data } = await axios.get(
@@ -88,7 +93,25 @@ export default function Home() {
       </div>
     );
 
-  const mostCurrentData = data.list[0];
+  const uniqueDates = [
+    ...new Set(
+      data?.list.map(
+        (entry: { dt: number }) =>
+          new Date(entry.dt * 1000).toISOString().split("T")[0]
+      )
+    ),
+  ];
+
+  // Filtering data to get the first entry after 6 AM for each unique date
+  const weatherDataForEachDate = uniqueDates.map((date) => {
+    return data?.list.find((entry: { dt: number }) => {
+      const entryDate = new Date(entry.dt * 1000).toISOString().split("T")[0];
+      const entryTime = new Date(entry.dt * 1000).getHours();
+      return entryDate === date && entryTime >= 6;
+    });
+  });
+
+  const mostCurrentData = data?.list[0];
 
   return (
     <div className="flex flex-col gap-4 bg-gray-100 min-h-screen">
@@ -97,16 +120,19 @@ export default function Home() {
         {/* today's data */}
         <section className="space-y-4">
           <div className="space-y-2">
-            <h2 className="flex gap-1 text-2xl items-end">
-              <p>{format(parseISO(mostCurrentData.dt_txt ?? ""), "EEEE")}</p>
+            <h2 className="flex gap-4 text-2xl items-end">
+              <p>{format(parseISO(mostCurrentData?.dt_txt ?? ""), "EEEE")}</p>
               <p className="text-lg">
-                {format(parseISO(mostCurrentData.dt_txt ?? ""), "dd.mm.yyyy")}
+                {format(
+                  parseISO(mostCurrentData?.dt_txt ?? ""),
+                  "MMMM, dd, yyyy"
+                )}
               </p>
             </h2>
             <Container className="gap-10 px-6 items-center">
               <div className="flex flex-col px-4">
                 <span className="text-5xl">
-                  {convertKelvinToFahrenheit(
+                  {convertKelvinToFarenheit(
                     mostCurrentData?.main.temp ?? 296.37
                   )}
                   °
@@ -114,7 +140,7 @@ export default function Home() {
                 <p className="text-xs space-x-1 whitespace-nowrap">
                   <span>Feels like</span>
                   <span>
-                    {convertKelvinToFahrenheit(
+                    {convertKelvinToFarenheit(
                       mostCurrentData?.main.feels_like ?? 296.37
                     )}
                     °
@@ -122,13 +148,13 @@ export default function Home() {
                 </p>
                 <p className="text-xs space-x-2">
                   <span>
-                    {convertKelvinToFahrenheit(
+                    {convertKelvinToFarenheit(
                       mostCurrentData?.main.temp_min ?? 0
                     )}
                     °↓
                   </span>
                   <span>
-                    {convertKelvinToFahrenheit(
+                    {convertKelvinToFarenheit(
                       mostCurrentData?.main.temp_max ?? 0
                     )}
                     °↑
@@ -136,23 +162,22 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex gap-10 sm:gap-16 overflow-x-auto w-full justify-between pr-3">
-                {data.list.map((data: WeatherDetail, index: number) => (
+                {data?.list.map((data, index) => (
                   <div
                     key={index}
-                    className="flex flex-col justify-between gap-2 items-center text-xs font-semibold"
+                    className="flex flex-col justify-between gap-2 items-center text-xs font-semibold pb-5"
                   >
                     <p className="whitespace-nowrap">
                       {format(parseISO(data.dt_txt), "h:mm a")}
                     </p>
-                    <p>
-                      <WeatherIcon
-                        iconName={getDayOrNightIcon(
-                          data.weather[0].icon,
-                          data.dt_txt
-                        )}
-                      />
-                      {convertKelvinToFahrenheit(data.main.temp ?? 0)}°
-                    </p>
+
+                    <WeatherIcon
+                      iconName={getDayOrNightIcon(
+                        data.weather[0].icon,
+                        data.dt_txt
+                      )}
+                    />
+                    <p>{convertKelvinToFarenheit(data.main.temp ?? 0)}°</p>
                   </div>
                 ))}
               </div>
@@ -161,21 +186,65 @@ export default function Home() {
           <div className="flex gap-4">
             {/* left */}
             <Container className="w-fit justify-center flex-col px-4 items-center">
-              <p className="capitalize text-center">{mostCurrentData.weather[0].description}</p>
+              <p className="capitalize text-center">
+                {mostCurrentData?.weather[0].description}
+              </p>
               <WeatherIcon
                 iconName={getDayOrNightIcon(
-                  mostCurrentData.weather[0].icon ?? "",
-                  mostCurrentData.dt_txt ?? ""
+                  mostCurrentData?.weather[0].icon ?? "",
+                  mostCurrentData?.dt_txt ?? ""
                 )}
               />
             </Container>
             {/* right */}
-            <Container className="bg-yellow-300/80 px-6 gap-4 justify-between"></Container>
+            <Container className="bg-yellow-300/80 px-6 gap-4 justify-between">
+              <WeatherDetails
+                visibility={metersToMiles(mostCurrentData?.visibility ?? 10000)}
+                airPressure={`${mostCurrentData?.main.pressure} hPa`}
+                humidity={`${mostCurrentData?.main.humidity}%`}
+                sunrise={format(
+                  fromUnixTime(data?.city.sunrise ?? 1702517657),
+                  "h:mm a"
+                )}
+                sunset={format(
+                  fromUnixTime(data?.city.sunset ?? 1702517657),
+                  "h:mm a"
+                )}
+                windSpeed={convertWindSpeedToMph(
+                  mostCurrentData?.wind.speed ?? 1.64
+                )}
+              />
+            </Container>
           </div>
         </section>
         {/* 7 day forecast */}
         <section className="flex w-full flex-col gap-4">
           <p className="text-2xl">Forecast (7 Days)</p>
+          {weatherDataForEachDate.map((data, index) => (
+            <ForecastWeatherDetail
+              key={index}
+              description={data?.weather[0].description ?? "Clear"}
+              weatherIcon={data?.weather[0].icon ?? "02d"}
+              date={format(parseISO(data?.dt_txt ?? ""), "dd.MM")}
+              day={format(parseISO(data?.dt_txt ?? ""), "EEEE")}
+              feelsLike={data?.main.feels_like ?? 0}
+              temp={data?.main.temp ?? 0}
+              tempMax={data?.main.temp_max ?? 0}
+              tempMin={data?.main.temp_min ?? 0}
+              airPressure={`${data?.main.pressure} hPa `}
+              humidity={`${data?.main.humidity}% `}
+              sunrise={format(
+                fromUnixTime(data?.city?.sunrise ?? 1702517657),
+                "H:mm"
+              )}
+              sunset={format(
+                fromUnixTime(data?.city?.sunset ?? 1702517657),
+                "H:mm"
+              )}
+              visibility={`${metersToMiles(data?.visibility ?? 10000)} `}
+              windSpeed={`${convertWindSpeedToMph(data?.wind.speed ?? 1.64)} `}
+            />
+          ))}
         </section>
       </main>
     </div>
