@@ -32,10 +32,10 @@ export default function ForecastWeatherDetail(
   return (
     <Container className="gap-4">
       <section className="flex gap-4 items-center px-4">
-        <div>
+        <div className="flex flex-col gap-1 items-center">
           <WeatherIcon iconName={weatherIcon} />
-          <p>{date}</p>
           <p className="text-sm">{day}</p>
+          <p className="whitespace-nowrap">{date}</p>
         </div>
         <div className="flex flex-col px-4">
           <span className="text-5xl">{convertKelvinToFarenheit(temp ?? 0)}</span>

@@ -125,7 +125,7 @@ export default function Home() {
               <p className="text-lg">
                 {format(
                   parseISO(mostCurrentData?.dt_txt ?? ""),
-                  "MMMM, dd, yyyy"
+                  "MMMM dd, yyyy"
                 )}
               </p>
             </h2>
@@ -183,7 +183,7 @@ export default function Home() {
               </div>
             </Container>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
             {/* left */}
             <Container className="w-fit justify-center flex-col px-4 items-center">
               <p className="capitalize text-center">
@@ -225,7 +225,7 @@ export default function Home() {
               key={index}
               description={data?.weather[0].description ?? "Clear"}
               weatherIcon={data?.weather[0].icon ?? "02d"}
-              date={format(parseISO(data?.dt_txt ?? ""), "dd.MM")}
+              date={format(parseISO(data?.dt_txt ?? ""), "MMMM dd")}
               day={format(parseISO(data?.dt_txt ?? ""), "EEEE")}
               feelsLike={data?.main.feels_like ?? 0}
               temp={data?.main.temp ?? 0}
