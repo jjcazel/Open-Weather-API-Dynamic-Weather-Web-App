@@ -1,7 +1,6 @@
 # 🌈 Weather App
 
 ![Weather App Demo](link-to-demo-image-or-video)
-*Replace this with your actual image/video link*
 
 I crafted this dynamic Weather App leveraging the prowess of **Next.js, React, Tailwind CSS,** and **TypeScript**. A special shout out to [freecodecamp](https://www.youtube.com/watch?v=KkC_wYM_Co4&t=2s) and [@reactwithutkarsh](https://www.youtube.com/channel/UCqNFQNGowoREH6V7RTtzUkA) for their invaluable resources that guided my journey.
 
