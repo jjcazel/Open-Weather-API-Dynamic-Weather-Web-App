@@ -4,7 +4,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 // Third-Party Libraries
-import { format, parseISO, fromUnixTime } from "date-fns";
+import { format, parseISO, fromUnixTime, addMinutes } from "date-fns";
 // Utility Functions
 import { convertKelvinToFarenheit } from "@/utils/convertKelvinToFarenheit";
 import { getDayOrNightIcon } from "@/utils/getDayOrNightIcon";
@@ -79,7 +79,7 @@ interface WeatherData {
 
 export default function Home() {
   const [place, setPlace] = useAtom(placeAtom);
-  const [loadingCity,] = useAtom(loadingCityAtom);
+  const [loadingCity] = useAtom(loadingCityAtom);
 
   const { isPending, error, data, refetch } = useQuery<WeatherData>({
     queryKey: ["repoData"],
@@ -122,6 +122,20 @@ export default function Home() {
   });
 
   const mostCurrentData = data?.list[0];
+ 
+  let date = parseISO(mostCurrentData?.dt_txt ?? new Date().toISOString());
+  // Calculate the local time zone offset in minutes
+  const timeZoneOffset = new Date().getTimezoneOffset();
+  // Adjust the date by the time zone offset to get the correct local time
+  date = addMinutes(date, -timeZoneOffset);
+
+  const dayOfWeek = format(date, "EEEE");
+  const fullDate = format(date, "MMMM dd, yyyy");
+
+  function displayLocalTime (utcDateString: string) {
+    const utcDate = new Date(utcDateString + "Z");
+    return format(utcDate, "h:mm a");
+  };
 
   return (
     <div className="flex flex-col gap-4 bg-gray-100 min-h-screen">
@@ -135,15 +149,8 @@ export default function Home() {
             <section className="space-y-4">
               <div className="space-y-2">
                 <h2 className="flex gap-4 text-2xl items-end">
-                  <p>
-                    {format(parseISO(mostCurrentData?.dt_txt ?? ""), "EEEE")}
-                  </p>
-                  <p className="text-lg">
-                    {format(
-                      parseISO(mostCurrentData?.dt_txt ?? ""),
-                      "MMMM dd, yyyy"
-                    )}
-                  </p>
+                  <p>{dayOfWeek}</p>
+                  <p className="text-lg">{fullDate}</p>
                 </h2>
                 <Container className="gap-10 px-6 items-center">
                   <div className="flex flex-col px-4">
@@ -184,7 +191,7 @@ export default function Home() {
                         className="flex flex-col justify-between gap-2 items-center text-xs font-semibold pb-5"
                       >
                         <p className="whitespace-nowrap">
-                          {format(parseISO(data.dt_txt), "h:mm a")}
+                          {displayLocalTime(data.dt_txt)}
                         </p>
 
                         <WeatherIcon
