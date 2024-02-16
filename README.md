@@ -1,6 +1,6 @@
 # 🌈 Weather App
 
-![Weather App Demo](link-to-demo-image-or-video)
+[Watch the Weather App Demo on Loom](https://www.loom.com/share/48e46026bf634bb2b694ece607ab9f2c?sid=8297c142-d45a-4580-b46a-e0481901656b)
 
 I crafted this dynamic Weather App leveraging the prowess of **Next.js, React, Tailwind CSS,** and **TypeScript**. A special shout out to [freecodecamp](https://www.youtube.com/watch?v=KkC_wYM_Co4&t=2s) and [@reactwithutkarsh](https://www.youtube.com/channel/UCqNFQNGowoREH6V7RTtzUkA) for their invaluable resources that guided my journey.
 
