@@ -206,7 +206,7 @@ export default function Home() {
                   </div>
                 </Container>
               </div>
-              <div className="flex gap-4 items-center">
+              <div className="flex gap-4">
                 {/* left */}
                 <Container className="w-fit justify-center flex-col px-4 items-center">
                   <p className="capitalize text-center">
@@ -220,7 +220,7 @@ export default function Home() {
                   />
                 </Container>
                 {/* right */}
-                <Container className="bg-yellow-300/80 px-6 gap-4 justify-between">
+                <Container className="bg-yellow-300/80 px-6 gap-4 justify-between overflow-x-auto">
                   <WeatherDetails
                     visibility={metersToMiles(
                       mostCurrentData?.visibility ?? 10000
