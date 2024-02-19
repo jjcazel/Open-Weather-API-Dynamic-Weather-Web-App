@@ -25,7 +25,9 @@ The UI is crafted for simplicity and ease of use, streamlined by Next.js and sty
 
 ## 📸 Screenshots
 
-()
+![Alt text for my image](public/DesktopUI.png)  
+![Alt text for my image](public/screencapture-localhost-3000-2024-02-16-18_18_35.png)
+
 
 ## 💡 Features
 
